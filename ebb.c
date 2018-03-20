@@ -208,7 +208,7 @@ on_handshake(struct ev_loop *loop ,ev_io *watcher, int revents)
     if(r == GNUTLS_E_INTERRUPTED || r == GNUTLS_E_AGAIN)
       ev_io_set( watcher
                , connection->fd
-               , EV_ERROR | (GNUTLS_NEED_WRITE ? EV_WRITE : EV_READ)
+               , /*EV_ERROR | */(GNUTLS_NEED_WRITE ? EV_WRITE : EV_READ)
                );
     return;
   }
@@ -407,7 +407,7 @@ on_goodbye_tls(struct ev_loop *loop, ev_io *watcher, int revents)
     if(r == GNUTLS_E_INTERRUPTED || r == GNUTLS_E_AGAIN)
       ev_io_set( watcher
                , connection->fd
-               , EV_ERROR | (GNUTLS_NEED_WRITE ? EV_WRITE : EV_READ)
+               , /*EV_ERROR |*/ (GNUTLS_NEED_WRITE ? EV_WRITE : EV_READ)
                );
     return;
   }
@@ -508,12 +508,12 @@ on_connection(struct ev_loop *loop, ev_io *watcher, int revents)
     gnutls_db_set_remove_function (connection->session, session_cache_remove);
   }
 
-  ev_io_set(&connection->handshake_watcher, connection->fd, EV_READ | EV_WRITE | EV_ERROR);
+  ev_io_set(&connection->handshake_watcher, connection->fd, EV_READ | EV_WRITE /* | EV_ERROR*/);
 #endif /* HAVE_GNUTLS */
 
   /* Note: not starting the write watcher until there is data to be written */
   ev_io_set(&connection->write_watcher, connection->fd, EV_WRITE);
-  ev_io_set(&connection->read_watcher, connection->fd, EV_READ | EV_ERROR);
+  ev_io_set(&connection->read_watcher, connection->fd, EV_READ/* | EV_ERROR*/);
   /* XXX: seperate error watcher? */
 
   ev_timer_start(loop, &connection->timeout_watcher);
@@ -547,7 +547,7 @@ ebb_server_listen_on_fd(ebb_server *server, const int fd)
   server->fd = fd;
   server->listening = TRUE;
   
-  ev_io_set (&server->connection_watcher, server->fd, EV_READ | EV_ERROR);
+  ev_io_set (&server->connection_watcher, server->fd, EV_READ/* | EV_ERROR*/);
   ev_io_start (server->loop, &server->connection_watcher);
   
   return server->fd;
@@ -752,7 +752,7 @@ ebb_connection_schedule_close (ebb_connection *connection)
 {
 #ifdef HAVE_GNUTLS
   if(connection->server->secure) {
-    ev_io_set(&connection->goodbye_tls_watcher, connection->fd, EV_ERROR | EV_READ | EV_WRITE);
+      ev_io_set(&connection->goodbye_tls_watcher, connection->fd, /*EV_ERROR | */EV_READ | EV_WRITE);
     ev_io_start(connection->server->loop, &connection->goodbye_tls_watcher);
     return;
   }

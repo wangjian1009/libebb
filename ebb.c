@@ -36,6 +36,10 @@
 # define MIN(a,b) (a < b ? a : b)
 #endif
 
+#ifndef TCP_MAXWIN
+#define TCP_MAXWIN 65535
+#endif
+
 #define error(FORMAT, ...) fprintf(stderr, "error: " FORMAT "\n", ##__VA_ARGS__)
 
 #define CONNECTION_HAS_SOMETHING_TO_WRITE (connection->to_write != NULL)
